@@ -1,24 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Models.GameFlow;
-using UnityEngine;
 
 namespace Controllers.MenuState
 {
-	public class MenuController : MonoBehaviour
+	public class MenuController : Controller
 	{
-		public event Action<UniTaskCompletionSource<GameFlowResult>> OnRun; 
-		
-		public async Task<GameFlowResult> Run()
+		protected override void OnRun(UniTaskCompletionSource<GameFlowResult> completionSource)
 		{
-
-			UniTaskCompletionSource<GameFlowResult> completionSource = new UniTaskCompletionSource<GameFlowResult>();
-			
-			OnRun?.Invoke(completionSource);
-			var result = await completionSource.Task;
-			return result;
 		}
-		
 	}
 }

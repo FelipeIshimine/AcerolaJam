@@ -4,4 +4,5 @@
 
 	public class QuitResult : GameFlowResult { }
 	public class GoToMenuResult : GameFlowResult { }
+	public class GoToGameplayResult : GameFlowResult { }
 }

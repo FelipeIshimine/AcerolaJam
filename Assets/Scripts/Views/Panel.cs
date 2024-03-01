@@ -1,6 +1,8 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace Views
@@ -8,194 +10,147 @@ namespace Views
 	[RequireComponent(typeof(CanvasGroup))]
 	public class Panel : MonoBehaviour
 	{
-		private CanvasGroup canvasGroup;
-		
-		[SerializeField] private float openDuration = .25f;
-		[SerializeField] private float closeDuration = .25f;
-
-		[SerializeField] private bool useScale;
-		[SerializeField] private AnimationCurve openScaleCurve = AnimationCurve.EaseInOut(0,0,1,1);
-		[SerializeField] private AnimationCurve closeScaleCurve = AnimationCurve.EaseInOut(0,0,1,1);
-		
-		[SerializeField] private bool useAlpha;
-		[SerializeField] private AnimationCurve openAlphaCurve = AnimationCurve.EaseInOut(0,0,1,1);
-		[SerializeField] private AnimationCurve closeAlphaCurve = AnimationCurve.EaseInOut(0,0,1,1);
-
-		[SerializeField] private bool useScreenBorderConstraint = true;
-		[SerializeField] private AnchorMode anchorMode;
-
-		private bool isOpen = false;
-
-		public bool IsAnimating { get; private set; }
-		
-		[System.Serializable]
-		private enum AnchorMode
-		{
-			None,
-			EvadeCenterStrict,
-			EvadeBordersStrict,
-			EvadeCenterAndBordersStrict,
-		}
-		
-		
-		private Vector2 anchorOffset;
-	
-		private Tween scaleTween;
-		private Tween alphaTween;
-		private Tween positionTween;
-
 		private RectTransform RT => (RectTransform)transform;
-		public bool IsOpen => isOpen;
+
+		private CanvasGroup canvasGroup;
+		protected CanvasGroup CanvasGroup
+		{
+			get
+			{
+				if (canvasGroup == null)
+				{
+					canvasGroup = GetComponent<CanvasGroup>();
+				}
+				return canvasGroup;
+			}
+		}
+
+		[SerializeField] private float duration = .25f; 
+		
+		[SerializeField] private bool useScale = true; 
+		[SerializeField] private AnimationCurve scaleCurveIn = AnimationCurve.EaseInOut(0,0,1,1); 
+		[SerializeField] private AnimationCurve scaleCurveOut = AnimationCurve.EaseInOut(0,0,1,1); 
+		
+		[SerializeField] private bool useAlpha = true;
+		[SerializeField] private AnimationCurve alphaCurveIn = AnimationCurve.EaseInOut(0,0,1,1);
+		[SerializeField] private AnimationCurve alphaCurveOut = AnimationCurve.EaseInOut(0,0,1,1);
+
+		[SerializeField] private bool useDisplacement = true; 
+		[SerializeField] private AnimationCurve displacementCurveIn = AnimationCurve.EaseInOut(0,0,1,1);
+		[SerializeField] private AnimationCurve displacementCurveOut = AnimationCurve.EaseInOut(0,0,1,1);
+
+		[SerializeField] private DisplacementMode displacementMode;
+		[SerializeField] private Vector2 displacement = Vector2.down;
+		
+		private Vector2 startAnchoredPosition;
 
 		private CancellationTokenSource cts;
-		
-		[SerializeField] private InterruptionMode interruptionMode;
-		private enum InterruptionMode
+
+		private enum DisplacementMode
 		{
-			Instant,
-			WaitForClose
+			Fixed,
+			MultiplyBySize,
+			MultiplyByParentSize
 		}
-		
-		public UniTask OpenAtWorldPosition(Vector3 worldPosition) => OpenAtScreenPoint(Camera.main.WorldToScreenPoint(worldPosition));
 
 		private void Awake()
 		{
-			canvasGroup = GetComponent<CanvasGroup>();
-			//Hide();
+			startAnchoredPosition = RT.anchoredPosition;
+			//canvasGroup = GetComponent<CanvasGroup>();
 		}
 
-		private async UniTask Play(Tween scaleT, Tween alphaT)
+		[Button]
+		public UniTask Open()
+		{
+			List<Tween> tweens = new List<Tween>();
+			if (useScale)
+			{
+				tweens.Add(RT.transform.ScaleTo(Vector3.one, duration, scaleCurveIn));
+			}
+			if (useAlpha)
+			{
+				tweens.Add(CanvasGroup.FadeIn(duration, alphaCurveIn));
+			}
+			if (useDisplacement)
+			{
+				tweens.Add(RT.AnchorTo(startAnchoredPosition, duration, displacementCurveIn));
+			}
+			return Play(tweens);
+		}
+
+		private UniTask Play(List<Tween> tweens)
 		{
 			cts?.Cancel();
 			cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-			IsAnimating = true;
-			scaleTween?.Stop();
-			scaleTween = scaleT;
-
-			alphaTween?.Stop();
-			alphaTween = alphaT;
-
-			List<UniTask> tasks = new List<UniTask>();
-
-			if(scaleT != null) tasks.Add(scaleT.Play(cts.Token));
-			if(alphaTween != null) tasks.Add(alphaTween.Play(cts.Token));
-
-			await (tasks.Count == 0 ? UniTask.Yield(cts.Token) : UniTask.WhenAll(tasks));
-			IsAnimating = false;
+			return UniTask.WhenAll(tweens.ConvertAll(x => x.Play(cts.Token)));
 		}
-		
-		public UniTask Open() => OpenAtScreenPoint(RT.position);
 
-		public async UniTask OpenAtScreenPoint(Vector3 screenPosition)
+		[Button]
+		public UniTask Close()
 		{
-			gameObject.SetActive(true);
-
-			if (interruptionMode == InterruptionMode.WaitForClose && isOpen)
+			List<Tween> tweens = new List<Tween>();
+			if (useScale)
 			{
-				await Close();
+				tweens.Add(RT.transform.ScaleTo(Vector3.zero, duration, scaleCurveOut));
 			}
-
-			transform.position = screenPosition;
-			isOpen = true;
-			switch (anchorMode)
+			if (useAlpha)
 			{
-				case AnchorMode.EvadeCenterStrict:
-					anchorOffset = Camera.main.ScreenToViewportPoint(RT.position)*2-Vector3.one;
-					anchorOffset.x = Mathf.CeilToInt(Mathf.Abs(anchorOffset.x)) * Mathf.Sign(anchorOffset.x);
-					anchorOffset.y = Mathf.CeilToInt(Mathf.Abs(anchorOffset.y)) * Mathf.Sign(anchorOffset.y);
-					anchorOffset /= 2;
-					break;
-				case AnchorMode.EvadeBordersStrict:
-					anchorOffset = (Camera.main.ScreenToViewportPoint(RT.position) * 2 - Vector3.one) *-1;
-					
-					anchorOffset.x = Mathf.CeilToInt(Mathf.Abs(anchorOffset.x)) * Mathf.Sign(anchorOffset.x);
-					anchorOffset.y = Mathf.CeilToInt(Mathf.Abs(anchorOffset.y)) * Mathf.Sign(anchorOffset.y);
-					anchorOffset /= 2;
-					break;
-				case AnchorMode.EvadeCenterAndBordersStrict:
-					
-					anchorOffset = Camera.main.ScreenToViewportPoint(RT.position)*2-Vector3.one;
-					anchorOffset.x = Mathf.CeilToInt(Mathf.Abs(anchorOffset.x)) * Mathf.Sign(anchorOffset.x);
-					anchorOffset.y = Mathf.CeilToInt(Mathf.Abs(anchorOffset.y)) * Mathf.Sign(anchorOffset.y);
-					anchorOffset /= 2;
-					
-					Vector2 position = RT.position;
-					if (position.x > Screen.currentResolution.width - RT.rect.width ||
-					    position.x < RT.rect.width)
-					{
-						anchorOffset.x *= -1;
-					}
-					
-					if (position.y > Screen.currentResolution.height - RT.rect.height ||
-					    position.y < RT.rect.height)
-					{
-						anchorOffset.y *= -1;
-					}
-					
-					break;
-				case AnchorMode.None:
-				default:
-					anchorOffset = Vector2.zero;
-					break;
+				tweens.Add(CanvasGroup.FadeOut(duration, alphaCurveOut));
 			}
-
-			RT.anchoredPosition += Vector2.Scale(RT.rect.size, anchorOffset);
-			
-			if (useScreenBorderConstraint)
+			if (useDisplacement)
 			{
-				Vector2 position = RT.position;
-				position.x = Mathf.Min(position.x, Screen.currentResolution.width - RT.rect.width* .5f);
-				position.x = Mathf.Max(position.x, RT.rect.width * .5f);
-					
-				position.y = Mathf.Min(position.y, Screen.currentResolution.height - RT.rect.height* .5f);
-				position.y = Mathf.Max(position.y, RT.rect.height * .5f);
-
-				transform.position = position;
+				tweens.Add(RT.AnchorTo(GetDisplacement(), duration, displacementCurveOut));
 			}
-
-			if (!useScale)
-			{
-				transform.localScale = Vector3.one;
-			}
-
-			if (!useAlpha)
-			{
-				canvasGroup.alpha = 1;
-			}
-			
-			await Play(
-				useScale
-					? transform.ScaleTo(Vector3.one, openDuration, openScaleCurve).SetTime(Tween.TimeType.Real)
-					: null,
-				useAlpha ? canvasGroup.FadeIn(openDuration, openAlphaCurve).SetTime(Tween.TimeType.Real) : null);
+			return Play(tweens);
 		}
 
-		public async UniTask Close()
-		{
-			isOpen = false;
-			await Play(
-				useScale
-					? transform.ScaleTo(Vector3.zero, closeDuration, closeScaleCurve).SetTime(Tween.TimeType.Real)
-					: null,
-				useAlpha ? canvasGroup.FadeOut(closeDuration, closeAlphaCurve).SetTime(Tween.TimeType.Real) : null
-			);
-			gameObject.SetActive(false);
-		}
-
+		[Button]
 		public void Show()
 		{
-			gameObject.SetActive(true);
-			transform.localScale = Vector3.one;
-			canvasGroup.alpha = 1;
+			if (useScale)
+			{
+				RT.transform.localScale = Vector3.LerpUnclamped(RT.transform.localScale, Vector3.one, scaleCurveIn.Evaluate(1));
+			}
+			if (useAlpha)
+			{
+				CanvasGroup.alpha = Mathf.LerpUnclamped(CanvasGroup.alpha, 1, alphaCurveIn.Evaluate(1));
+			}
+			if (useDisplacement)
+			{
+				RT.anchoredPosition = Vector3.LerpUnclamped(RT.anchoredPosition, startAnchoredPosition, displacementCurveIn.Evaluate(1));
+			}
 		}
-
+		
+		[Button]
 		public void Hide()
 		{
-			gameObject.SetActive(false);
-			transform.localScale = Vector3.zero;
-			canvasGroup.alpha = 0;
+			if (useScale)
+			{
+				RT.transform.localScale = Vector3.LerpUnclamped(RT.transform.localScale, Vector3.zero, scaleCurveOut.Evaluate(1));
+			}
+			if (useAlpha)
+			{
+				CanvasGroup.alpha = Mathf.LerpUnclamped(CanvasGroup.alpha, 0, alphaCurveOut.Evaluate(1));
+			}
+			if (useDisplacement)
+			{
+				RT.anchoredPosition = Vector3.LerpUnclamped(RT.anchoredPosition, GetDisplacement(), displacementCurveOut.Evaluate(1));
+			}
+		}
+		
+		private Vector3 GetDisplacement()
+		{
+			switch (displacementMode)
+			{
+				case DisplacementMode.Fixed:
+					return displacement;
+				case DisplacementMode.MultiplyBySize:
+					return Vector2.Scale(displacement, RT.rect.size);
+				case DisplacementMode.MultiplyByParentSize:
+					return Vector2.Scale(displacement, ((RectTransform)transform.parent).rect.size);
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
-	
-	
 }
