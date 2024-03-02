@@ -10,8 +10,9 @@ namespace Models.Platformer.States
 		protected override PlatformerMotorState OnTransitionCheck() => null;
 	}
 
+	
 
-	public interface IGroundedMovement : IRigidBody2D
+	public interface ICanRunOnGround : IRigidBody2D
 	{
 		public bool IsGrounded { get; set; }
 		public bool WallContactLeft { get; }
@@ -20,9 +21,13 @@ namespace Models.Platformer.States
 		public float MoveDirection { get; }
 	}
 
-	public interface IGroundedJump : IRigidBody2D
+	public interface ICanJump : IRigidBody2D
 	{
 		public bool JumpRequested {get; set;}
+	}
+	public interface ICanDash : IRigidBody2D
+	{
+		public bool DashRequested {get; set;}
 	}
 
 	public interface IRigidBody2D
@@ -30,7 +35,7 @@ namespace Models.Platformer.States
 		public Rigidbody2D Rb { get; set; }
 	}
 
-	public interface IGroundedMovementWithJump : IGroundedMovement, IGroundedJump
+	public interface ICanRunJumpDash : ICanRunOnGround, ICanJump,ICanDash
 	{
 	}
 }

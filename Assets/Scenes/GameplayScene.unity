@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 83560668}
   - component: {fileID: 83560670}
   - component: {fileID: 83560671}
+  - component: {fileID: 83560672}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -210,14 +211,6 @@ MonoBehaviour:
     maxDepth: 0
     minNormalAngle: 0
     maxNormalAngle: 0
-  context:
-    <IsGrounded>k__BackingField: 0
-    <WallContactLeft>k__BackingField: 0
-    <WallContactRight>k__BackingField: 0
-    <GroundNormal>k__BackingField: {x: 0, y: 0}
-    <MoveDirection>k__BackingField: 0
-    <Dash>k__BackingField: 0
-    <JumpRequested>k__BackingField: 0
   groundSensibility: 0.6
   wallSensibility: 0.5
   settings:
@@ -233,16 +226,18 @@ MonoBehaviour:
     CoyoteTime: 0.025
     UngroundTime: 0.1
   movementSettings:
-    unGroundTimeDuration: 0.4
+    UnGroundTimeDuration: 0.1
+    MaxAirJumps: 2
+    jumpVelocity: 10
     AirborneStateSettings:
       AirMaxSpeed: 5
       AirAcceleration: 40
     RunningStateSettings:
       GroundMaxSpeed: 8
       GroundAcceleration: 120
-    JumpStateSettings:
-      Duration: 1
-      UpwardVelocity: 10
+    DashStateSettings:
+      Duration: 0.1
+      Velocity: 20
       IntensityCurve:
         serializedVersion: 2
         m_Curve:
@@ -257,12 +252,12 @@ MonoBehaviour:
           outWeight: 0
         - serializedVersion: 3
           time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
+          value: 0
+          inSlope: -3.3236208
+          outSlope: -3.3236208
           tangentMode: 0
           weightedMode: 0
-          inWeight: 0
+          inWeight: 0.049693286
           outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2
@@ -279,6 +274,25 @@ MonoBehaviour:
       data:
         <SubState>k__BackingField:
           rid: -2
+--- !u!114 &83560672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 83560667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37e234d730604a55ae20f446e12c5528, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <IsGrounded>k__BackingField: 0
+  <WallContactLeft>k__BackingField: 0
+  <WallContactRight>k__BackingField: 0
+  <GroundNormal>k__BackingField: {x: 0, y: 0}
+  <MoveDirection>k__BackingField: 0
+  <JumpRequested>k__BackingField: 0
+  <DashRequested>k__BackingField: 0
 --- !u!1 &105235925
 GameObject:
   m_ObjectHideFlags: 0

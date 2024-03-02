@@ -2,7 +2,7 @@
 
 namespace Models.Platformer.States
 {
-	public class TerrestrialMovementState : PlatformerMotorState<IGroundedMovementWithJump>
+	public class TerrestrialMovementState : PlatformerMotorState<ICanRunJumpDash>
 	{
 		private readonly Settings settings;
 		private GroundState groundState;
@@ -12,6 +12,7 @@ namespace Models.Platformer.States
 		private int remainingCoyoteTime;
 		private float UngroundTime = .2f;
 		private float remainingUnGroundTime;
+		private DashState dashState;
 
 		[System.Serializable]
 		public record Settings
@@ -22,9 +23,10 @@ namespace Models.Platformer.States
 			public float jumpVelocity = 10;
 			public AirborneState.Settings AirborneStateSettings;
 			public GroundRunState.Settings RunningStateSettings;
+			public DashState.Settings DashStateSettings;
 		}
 		
-		public TerrestrialMovementState(IGroundedMovementWithJump context, Settings settings) : base(context)
+		public TerrestrialMovementState(ICanRunJumpDash context, Settings settings) : base(context)
 		{
 			this.settings = settings;
 		}
@@ -58,8 +60,15 @@ namespace Models.Platformer.States
 			remainingCoyoteTime = 0;
 			remainingUnGroundTime = UngroundTime;
 		}
+		
 		protected override PlatformerMotorState OnTransitionCheck()
 		{
+			if (Context.DashRequested || (dashState != null && dashState.LifeTime < settings.DashStateSettings.Duration))
+			{
+				Context.DashRequested = false;
+				return dashState ??= new DashState(Context, settings.DashStateSettings);
+			}
+			
 			if (Context.IsGrounded && remainingUnGroundTime <= 0)
 			{
 				Debug.Log("B");

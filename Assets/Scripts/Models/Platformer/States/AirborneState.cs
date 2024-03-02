@@ -2,7 +2,7 @@
 
 namespace Models.Platformer.States
 {
-	public class AirborneState : PlatformerMotorState<IGroundedMovement>
+	public class AirborneState : PlatformerMotorState<ICanRunOnGround>
 	{
 		[System.Serializable]
 		public class Settings
@@ -12,7 +12,7 @@ namespace Models.Platformer.States
 		}
 		private readonly Settings settings;
 
-		public AirborneState(IGroundedMovement context, Settings settings) : base(context)
+		public AirborneState(ICanRunOnGround context, Settings settings) : base(context)
 		{
 			this.settings = settings;
 		}

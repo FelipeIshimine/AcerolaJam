@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Models.Platformer
 {
 	[System.Serializable]
-	public class PlayerMovementStatus : MonoBehaviour, IGroundedMovementWithJump
+	public class PlayerMovementStatus : MonoBehaviour, ICanRunJumpDash
 	{
 		public Rigidbody2D Rb { get; set; }
 		[field:SerializeField] public bool IsGrounded { get; set; }
@@ -16,7 +16,7 @@ namespace Models.Platformer
 		[field:SerializeField] public float MoveDirection {get; set;}
 
 		//Triggers
-		[field:SerializeField] public bool Dash {get; set;}
 		[field:SerializeField] public bool JumpRequested {get; set;}
+		[field:SerializeField] public bool DashRequested { get; set; }
 	}
 }

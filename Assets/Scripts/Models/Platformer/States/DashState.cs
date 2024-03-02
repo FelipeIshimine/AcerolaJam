@@ -2,36 +2,43 @@
 
 namespace Models.Platformer.States
 {
-	public class ImpulseState : PlatformerMotorState<IGroundedJump>
+	public class DashState : PlatformerMotorState<ICanRunOnGround>
 	{
 		private readonly Settings settings;
+		private float Dir;
 
 		[System.Serializable]
 		public record Settings
 		{
 			[Min(0.01f)]public float Duration = 1;
-			public float UpwardVelocity = 10;
+			public float Velocity = 10;
 			public AnimationCurve IntensityCurve = AnimationCurve.Constant(0,1,1);
 		}
 
-		public ImpulseState(IGroundedJump context, Settings settings) : base(context)
+		public DashState(ICanRunOnGround context, Settings settings) : base(context)
 		{
 			this.settings = settings;
 		}
 
-		protected override void OnEnter() { }
+		protected override void OnEnter() => Dir = Context.MoveDirection;
 		protected override void OnExit() { }
 
 		protected override void OnFixedUpdate(float delta)
 		{
 			float t = LifeTime/settings.Duration;
 			var velocity = Context.Rb.velocity;
-			velocity.y = Mathf.Max(velocity.y, settings.IntensityCurve.Evaluate(t)*settings.UpwardVelocity);
-			Context.Rb.velocity = velocity;
-			/*if (t >= 1)
+
+			if (Dir > 0)
 			{
-				Abort();
-			}*/
+				velocity.x = Mathf.Max(velocity.x, settings.IntensityCurve.Evaluate(t)*settings.Velocity);
+			}
+			else
+			{
+				velocity.x = Mathf.Min(velocity.x, -settings.IntensityCurve.Evaluate(t)*settings.Velocity);
+			}
+			
+			velocity.y = 0;
+			Context.Rb.velocity = velocity;
 		}
 
 		protected override PlatformerMotorState OnTransitionCheck() => null;

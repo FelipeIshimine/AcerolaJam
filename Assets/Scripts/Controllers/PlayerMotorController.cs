@@ -80,9 +80,9 @@ namespace Controllers
 
 		public void OnDash(InputAction.CallbackContext context)
 		{
-			if (context.performed && remainingDashes > 0)
+			if (context.performed)
 			{
-				this.status.Dash = true;
+				status.DashRequested = true;
 			}
 		}	
 		#endregion
@@ -115,10 +115,10 @@ namespace Controllers
 				remainingDashCooldown = 0;
 			}
 			
-			if (status.Dash && remainingDashes > 0)
+			if (status.DashRequested && remainingDashes > 0)
 			{
 				remainingDashes--;
-				status.Dash = false;
+				status.DashRequested = false;
 				
 				vel.x = Mathf.Max(vel.y, settings.DashMaxSpeed);
 				vel.y = 0;
@@ -127,7 +127,7 @@ namespace Controllers
 				Unground();
 			}
 			
-			status.Dash = false;
+			status.DashRequested = false;
 			
 			if ((!status.WallContactLeft && status.MoveDirection < 0) ||
 			    (!status.WallContactRight && status.MoveDirection > 0))

@@ -1,12 +1,12 @@
 ﻿namespace Models.Platformer.States
 {
-	public class GroundState : PlatformerMotorState<IGroundedMovement>
+	public class GroundState : PlatformerMotorState<ICanRunOnGround>
 	{
 		private GroundIdleState groundIdleState;
 		private GroundRunState groundRunState;
 		private GroundRunState.Settings runStateSettings;
 
-		public GroundState(IGroundedMovement context, GroundRunState.Settings runStateSettings) : base(context)
+		public GroundState(ICanRunOnGround context, GroundRunState.Settings runStateSettings) : base(context)
 		{
 			this.runStateSettings = runStateSettings;
 		}

@@ -2,11 +2,11 @@
 
 namespace Models.Platformer.States
 {
-	public class GroundIdleState : PlatformerMotorState<IGroundedMovement>
+	public class GroundIdleState : PlatformerMotorState<ICanRunOnGround>
 	{
 		private Vector2 vel;
 
-		public GroundIdleState(IGroundedMovement context) : base(context)
+		public GroundIdleState(ICanRunOnGround context) : base(context)
 		{
 		}
 
