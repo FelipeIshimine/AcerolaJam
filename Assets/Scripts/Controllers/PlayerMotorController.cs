@@ -1,19 +1,20 @@
+using System;
 using Models.Platformer;
+using Models.Platformer.States;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Controllers
 {
-	[RequireComponent(typeof(Rigidbody2D))]
-	public class PlatformerMotorController : MonoBehaviour, InputMap.IGameplayActions
+	[RequireComponent(typeof(Rigidbody2D), typeof(PlayerMovementStatus))]
+	public class PlayerMotorController : MonoBehaviour, InputMap.IGameplayActions
 	{
 		private Rigidbody2D rb;
 		private InputMap inputMap;
 
 		[SerializeField] private ContactFilter2D groundFilter;
-		[SerializeField] private BoxCollider2D boxCollider;
-		[SerializeField] private PlatformerMotorModel model;
+		private PlayerMovementStatus status;
 
 		[SerializeField] private float groundSensibility = .6f;
 		[SerializeField] private float wallSensibility = .5f;
@@ -27,13 +28,26 @@ namespace Controllers
 		[ReadOnly,ShowNonSerializedField] private int remainingAirJumps;
 		[ReadOnly,ShowNonSerializedField] private int remainingDashes;
 		[ReadOnly,ShowNonSerializedField] private float remainingDashCooldown;
-		
+
+		[SerializeField] private TerrestrialMovementState.Settings movementSettings;
+		[SerializeReference] private PlatformerMotorState movementState = new NoneState();
+
 		[Button]
 		private void Awake()
 		{
 			rb = GetComponent<Rigidbody2D>();
+			status = GetComponent<PlayerMovementStatus>();
 			inputMap = new InputMap();
 			inputMap.Gameplay.AddCallbacks(this);
+
+			status.Rb = rb;
+			movementState = new TerrestrialMovementState(status, movementSettings);
+			movementState.Enter();
+		}
+
+		private void OnDestroy()
+		{
+			movementState.Exit();
 		}
 
 		private void OnEnable()
@@ -55,20 +69,20 @@ namespace Controllers
 			Debug.Log($"OnJump:{context.performed}");
 			if (context.performed)
 			{
-				model.Jump = true;
+				this.status.JumpRequested = true;
 			}
 		}
 
 		public void OnHorizontalMovement(InputAction.CallbackContext context)
 		{
-			model.MoveDirection = context.ReadValue<float>();
+			this.status.MoveDirection = context.ReadValue<float>();
 		}
 
 		public void OnDash(InputAction.CallbackContext context)
 		{
 			if (context.performed && remainingDashes > 0)
 			{
-				model.Dash = true;
+				this.status.Dash = true;
 			}
 		}	
 		#endregion
@@ -77,36 +91,34 @@ namespace Controllers
 		{
 			ProcessState();
 
+			movementState.FixedUpdate(Time.fixedDeltaTime);
+			
+			return;
 			var vel = rb.velocity;
 			
-			if (model.Jump && CanJump())
+			if (status.JumpRequested && CanJump())
 			{
-				if (!model.IsGrounded)
+				if (!status.IsGrounded)
 				{
 					remainingAirJumps--;
 				}
 				
 				vel.y = Mathf.Max(vel.y, settings.JumpVelocity);
 
-				/*if (model.IsGrounded)
-				{
-					vel.y += Mathf.Max(CalculateGroundSpeed(rb.velocity).y,0);
-				}*/
-				
 				Unground();
 			}
-			model.Jump = false;
+			status.JumpRequested = false;
 
-			if (model.IsGrounded)
+			if (status.IsGrounded)
 			{
 				remainingDashes = settings.DashCount;
 				remainingDashCooldown = 0;
 			}
 			
-			if (model.Dash && remainingDashes > 0)
+			if (status.Dash && remainingDashes > 0)
 			{
 				remainingDashes--;
-				model.Dash = false;
+				status.Dash = false;
 				
 				vel.x = Mathf.Max(vel.y, settings.DashMaxSpeed);
 				vel.y = 0;
@@ -115,14 +127,14 @@ namespace Controllers
 				Unground();
 			}
 			
-			model.Dash = false;
+			status.Dash = false;
 			
-			if ((!model.WallContactLeft && model.MoveDirection < 0) ||
-			    (!model.WallContactRight && model.MoveDirection > 0))
+			if ((!status.WallContactLeft && status.MoveDirection < 0) ||
+			    (!status.WallContactRight && status.MoveDirection > 0))
 			{
-				if (model.IsGrounded && remainingUnGroundTime <= 0)
+				if (status.IsGrounded && remainingUnGroundTime <= 0)
 				{
-					if (model.MoveDirection != 0)
+					if (status.MoveDirection != 0)
 					{
 						vel = CalculateGroundSpeed(vel);
 					}
@@ -134,8 +146,8 @@ namespace Controllers
 				else
 				{
 					var targetSpeed = Mathf.Max(Mathf.Abs(vel.x),
-							Mathf.Abs(settings.AirMaxSpeed * model.MoveDirection)) *
-						Mathf.Sign(model.MoveDirection);
+							Mathf.Abs(settings.AirMaxSpeed * status.MoveDirection)) *
+						Mathf.Sign(status.MoveDirection);
 					vel.x = Mathf.MoveTowards(vel.x, targetSpeed, settings.AirAcceleration * Time.deltaTime);
 				}
 			}
@@ -145,21 +157,21 @@ namespace Controllers
 
 		private void Unground()
 		{
-			model.IsGrounded = false;
+			status.IsGrounded = false;
 			remainingCoyoteTime = 0;
 			remainingUnGroundTime = settings.UngroundTime;
 		}
 
 		private Vector2 CalculateGroundSpeed(Vector2 vel)
 		{
-			Vector2 moveDir = Vector3.ProjectOnPlane(Vector2.right * model.MoveDirection,
-				model.GroundNormal);
+			Vector2 moveDir = Vector3.ProjectOnPlane(Vector2.right * status.MoveDirection,
+				status.GroundNormal);
 			var groundSpeed = Vector2.MoveTowards(vel, moveDir * settings.GroundMaxSpeed,
 				settings.GroundAcceleration * Time.deltaTime);
 			return groundSpeed;
 		}
 
-		private bool CanJump() => (model.IsGrounded || remainingAirJumps > 0);
+		private bool CanJump() => (status.IsGrounded || remainingAirJumps > 0);
 
 		private void ProcessState()
 		{
@@ -173,7 +185,7 @@ namespace Controllers
 				if (groundSensibility <= dot)
 				{
 					grounded = true;
-					model.GroundNormal = contacts[i].normal;
+					status.GroundNormal = contacts[i].normal;
 					remainingCoyoteTime = settings.CoyoteTime;
 					remainingAirJumps = settings.MaxAirJumps;
 					break;
@@ -181,10 +193,10 @@ namespace Controllers
 			}
 
 			//Left Wall Check
-			model.WallContactLeft = CheckAnyContactAngle(count, Vector2.right, wallSensibility);
+			status.WallContactLeft = CheckAnyContactAngle(count, Vector2.right, wallSensibility);
 		
 			//Right Wall Check
-			model.WallContactRight = CheckAnyContactAngle(count, Vector2.left, wallSensibility);
+			status.WallContactRight = CheckAnyContactAngle(count, Vector2.left, wallSensibility);
 
 			if (grounded || remainingCoyoteTime > 0)
 			{
@@ -196,12 +208,10 @@ namespace Controllers
 
 			remainingDashCooldown -= Time.fixedDeltaTime;
 			
-			
-			
 				
-			model.Jump &= CanJump();
+			status.JumpRequested &= CanJump();
 
-			model.IsGrounded = grounded;
+			status.IsGrounded = grounded;
 
 		}
 

@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 83560668}
   - component: {fileID: 83560670}
-  - component: {fileID: 83560669}
+  - component: {fileID: 83560671}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -157,77 +157,6 @@ Transform:
   - {fileID: 121210213}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &83560669
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 83560667}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bae9cd8b2bb65347b1879891ffb8f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  groundFilter:
-    useTriggers: 0
-    useLayerMask: 1
-    useDepth: 0
-    useOutsideDepth: 0
-    useNormalAngle: 0
-    useOutsideNormalAngle: 0
-    layerMask:
-      serializedVersion: 2
-      m_Bits: 8
-    minDepth: 0
-    maxDepth: 0
-    minNormalAngle: 0
-    maxNormalAngle: 0
-  boxCollider: {fileID: 121210214}
-  model:
-    IsGrounded: 0
-    WallContactLeft: 0
-    WallContactRight: 0
-    Jump: 0
-    GroundNormal: {x: 0, y: 0}
-    MoveDirection: 0
-  groundSensibility: 0.6
-  wallSensibility: 0.5
-  settings:
-    JumpVelocity: 10
-    GroundMaxSpeed: 12
-    GroundAcceleration: 150
-    AirMaxSpeed: 5
-    AirAcceleration: 50
-    MaxAirJumps: 3
-    DashMaxSpeed: 3
-    DashDuration: 0.15
-    DashForceCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    CoyoteTime: 0.025
-    UngroundTime: 0.1
 --- !u!50 &83560670
 Rigidbody2D:
   serializedVersion: 4
@@ -255,6 +184,101 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &83560671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 83560667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 569fbc0d8b046584d8a530aa45c56a05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundFilter:
+    useTriggers: 0
+    useLayerMask: 0
+    useDepth: 0
+    useOutsideDepth: 0
+    useNormalAngle: 0
+    useOutsideNormalAngle: 0
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 8
+    minDepth: 0
+    maxDepth: 0
+    minNormalAngle: 0
+    maxNormalAngle: 0
+  context:
+    <IsGrounded>k__BackingField: 0
+    <WallContactLeft>k__BackingField: 0
+    <WallContactRight>k__BackingField: 0
+    <GroundNormal>k__BackingField: {x: 0, y: 0}
+    <MoveDirection>k__BackingField: 0
+    <Dash>k__BackingField: 0
+    <JumpRequested>k__BackingField: 0
+  groundSensibility: 0.6
+  wallSensibility: 0.5
+  settings:
+    JumpVelocity: 6
+    GroundMaxSpeed: 5
+    GroundAcceleration: 30
+    AirMaxSpeed: 5
+    AirAcceleration: 5
+    MaxAirJumps: 3
+    DashCount: 1
+    DashMaxSpeed: 3
+    DashCooldown: 0.2
+    CoyoteTime: 0.025
+    UngroundTime: 0.1
+  movementSettings:
+    unGroundTimeDuration: 0.4
+    AirborneStateSettings:
+      AirMaxSpeed: 5
+      AirAcceleration: 40
+    RunningStateSettings:
+      GroundMaxSpeed: 8
+      GroundAcceleration: 120
+    JumpStateSettings:
+      Duration: 1
+      UpwardVelocity: 10
+      IntensityCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+  movementState:
+    rid: 2396332858888683520
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2396332858888683520
+      type: {class: NoneState, ns: Models.Platformer.States, asm: Models}
+      data:
+        <SubState>k__BackingField:
+          rid: -2
 --- !u!1 &105235925
 GameObject:
   m_ObjectHideFlags: 0
@@ -828,7 +852,7 @@ Transform:
   m_GameObject: {fileID: 276507241}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -2.46, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1921,7 +1945,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &781193115
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2181,7 +2205,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &854678325
 SpriteRenderer:
   m_ObjectHideFlags: 0
