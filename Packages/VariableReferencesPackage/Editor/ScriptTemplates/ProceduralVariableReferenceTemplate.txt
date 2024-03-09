@@ -1,0 +1,10 @@
+﻿using UnityEngine;
+using VariableReferences;
+
+[System.Serializable]
+public class Procedural{0}Reference : {0}Reference
+{{
+    [SerializeField] private Procedural{0} proceduralVariable;
+    protected override {1} GetValue() => proceduralVariable.Get();
+    protected override void SetValue({1} newValue) => proceduralVariable.Set(newValue);
+}}

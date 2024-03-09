@@ -1,0 +1,7 @@
+﻿using UnityEngine;
+using VariableReferences;
+
+[CreateAssetMenu(menuName = "ScriptableVariable/{0}")]
+public class {0}Asset : ScriptableVariable<{1}> 
+{{
+}}

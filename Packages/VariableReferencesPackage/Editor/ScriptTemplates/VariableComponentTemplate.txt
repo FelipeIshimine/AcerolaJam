@@ -1,0 +1,7 @@
+﻿using UnityEngine;
+using VariableReferences;
+
+
+public class {0}Component : ComponentVariable<{1}> 
+{{
+}}

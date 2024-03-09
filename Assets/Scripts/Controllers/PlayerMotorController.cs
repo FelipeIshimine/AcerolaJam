@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Models.Platformer;
 using Models.Platformer.States;
 using NaughtyAttributes;
@@ -179,18 +180,36 @@ namespace Controllers
 			bool grounded = false;
 		
 			//Floor Check
+			List<ContactPoint2D> floorContacts = new List<ContactPoint2D>();  
 			for (int i = 0; i < count; i++)
 			{
 				var dot = Vector2.Dot(contacts[i].normal, Vector2.up);
 				if (groundSensibility <= dot)
 				{
-					grounded = true;
-					status.GroundNormal = contacts[i].normal;
-					remainingCoyoteTime = settings.CoyoteTime;
-					remainingAirJumps = settings.MaxAirJumps;
+					floorContacts.Add(contacts[i]);
 					break;
 				}
 			}
+
+			if (floorContacts.Count > 0)
+			{
+				grounded = true;
+				remainingCoyoteTime = settings.CoyoteTime;
+				remainingAirJumps = settings.MaxAirJumps;
+
+				status.GroundNormal = Vector2.zero;
+
+				for (int i = 0; i < floorContacts.Count; i++)
+				{
+					status.GroundNormal += contacts[i].normal;
+					Debug.DrawRay(contacts[i].point, contacts[i].normal, Color.yellow);
+				}
+
+
+				status.GroundNormal.Normalize();
+				Debug.DrawRay(transform.position, status.GroundNormal, Color.magenta);
+			}
+			
 
 			//Left Wall Check
 			status.WallContactLeft = CheckAnyContactAngle(count, Vector2.right, wallSensibility);

@@ -1,0 +1,9 @@
+﻿using UnityEngine;
+
+[System.Serializable]
+public class Constant{0}Reference : {0}Reference 
+{{
+	[SerializeField] private {1} target;
+    protected override {1} GetValue() => target;
+    protected override void SetValue({1} newValue) => target = newValue;
+}}

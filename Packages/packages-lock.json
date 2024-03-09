@@ -311,6 +311,18 @@
       },
       "url": "https://packages.unity.com"
     },
+    "ishimine.gameeventsystem": {
+      "version": "file:GameEventSystem",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "ishimine.variable-references": {
+      "version": "file:VariableReferencesPackage",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

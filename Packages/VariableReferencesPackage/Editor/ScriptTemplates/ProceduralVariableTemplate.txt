@@ -1,0 +1,11 @@
+﻿using UnityEngine;
+using VariableReferences;
+
+[System.Serializable]
+public class Procedural{0} : ProceduralVariable<{1}, {0}Reference, {0}Decorator>
+{{
+    public Procedural{0}()
+	{{
+		baseValue = new Constant{0}Reference();
+	}}
+}}

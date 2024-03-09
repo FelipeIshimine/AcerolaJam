@@ -1,0 +1,19 @@
+{
+  "name": "ishimine.variable-references",
+  "displayName": "Variable Reference System",
+  "version": "1.0.0",
+  "unity": "2022.1",
+  "description": "-",
+  "author": {
+    "name": "Felipe Ishimine",
+    "email": "felipeishimine@gmail.com",
+    "url": "https://felipeishimine.github.io/"
+  },
+  "keywords": [
+    "events",
+    "scriptable objects",
+    "variable",
+    "reference",
+    "game event"
+  ]
+}

@@ -1,0 +1,7 @@
+﻿using UnityEngine;
+using VariableReferences;
+
+[System.Serializable]
+public abstract class {0}Reference : VariableReference<{1}> 
+{{
+}}

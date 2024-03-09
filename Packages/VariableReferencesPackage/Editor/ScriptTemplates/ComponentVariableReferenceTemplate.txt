@@ -1,0 +1,11 @@
+﻿using UnityEngine;
+
+[System.Serializable]
+public class Component{0}Reference : {0}Reference 
+{{
+	[SerializeField] private {0}Component target;
+    
+    protected override {1} GetValue() => target.Value;
+    protected override void SetValue({1} newValue) => target.Value = newValue;
+        
+}}

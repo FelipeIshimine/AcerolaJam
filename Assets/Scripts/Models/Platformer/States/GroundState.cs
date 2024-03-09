@@ -1,10 +1,13 @@
-﻿namespace Models.Platformer.States
+﻿using UnityEngine;
+
+namespace Models.Platformer.States
 {
 	public class GroundState : PlatformerMotorState<ICanRunOnGround>
 	{
 		private GroundIdleState groundIdleState;
 		private GroundRunState groundRunState;
 		private GroundRunState.Settings runStateSettings;
+		private float rotVel;
 
 		public GroundState(ICanRunOnGround context, GroundRunState.Settings runStateSettings) : base(context)
 		{
@@ -21,7 +24,7 @@
 
 		protected override void OnFixedUpdate(float delta)
 		{
-	
+			Context.Rb.rotation = Mathf.SmoothDampAngle(Context.Rb.rotation,-Vector2.Angle(Vector2.up, Context.GroundNormal),ref rotVel, 1f, float.MaxValue);
 		}
 
 		protected override PlatformerMotorState OnTransitionCheck()
